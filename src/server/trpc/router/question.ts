@@ -1,6 +1,5 @@
 import { router, publicProcedure, protectedProcedure } from "../trpc";
 import { z } from "zod";
-import { createGzip } from "zlib";
 
 export const questionRouter = router({
   createQuestion: protectedProcedure
@@ -15,14 +14,16 @@ export const questionRouter = router({
       return question;
     }),
   getAllQuestions: publicProcedure.query(({ ctx }) => {
-    return ctx.prisma.question.findMany();
+    return ctx.prisma.question.findMany({
+      include: { categories: true },
+    });
   }),
   getOneQuestion: publicProcedure
     .input(z.object({ id: z.string() }))
     .query(({ ctx, input }) => {
       return ctx.prisma.question.findUnique({
         where: { id: input?.id },
-        include: { answers: true },
+        include: { answers: true, categories: true },
       });
     }),
   updateQuestion: protectedProcedure
@@ -39,5 +40,30 @@ export const questionRouter = router({
       return ctx.prisma.question.delete({
         where: { id: input?.id },
       });
+    }),
+  setQuestionCategory: protectedProcedure
+    .input(
+      z.object({
+        questionId: z.string(),
+        categoryId: z.string(),
+      })
+    )
+    .mutation(({ ctx, input }) => {
+      const addCategoryQuestionThingie =
+        ctx.prisma.categoriesQuestionsRelation.create({
+          data: {
+            assignedById: ctx.session.user.id,
+            questionId: input?.questionId,
+            categoryId: input?.categoryId,
+            assignedAt: new Date(),
+          },
+        });
+      return addCategoryQuestionThingie;
+
+      // // tim's original
+      // return ctx.prisma.question.update({
+      //   where: { id: input?.questionId },
+      //   data: { categoryId: input?.categoryId },
+      // });
     }),
 });

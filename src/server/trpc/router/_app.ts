@@ -1,3 +1,4 @@
+import { categoryRouter } from "./category";
 import { router } from "../trpc";
 import { authRouter } from "./auth";
 import { exampleRouter } from "./example";
@@ -9,6 +10,7 @@ export const appRouter = router({
   auth: authRouter,
   question: questionRouter,
   answer: answerRouter,
+  category: categoryRouter,
 });
 
 // export type definition of API

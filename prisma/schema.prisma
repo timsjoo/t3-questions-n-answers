@@ -57,6 +57,7 @@ model User {
   sessions      Session[]
   questions     Question[]
   answers       Answer[]
+  categoryAssigned CategoriesQuestionsRelation[]
 }
 
 model VerificationToken {
@@ -73,6 +74,9 @@ model Question {
   author    User     @relation(fields: [authorId], references: [id])
   authorId  String 
   answers   Answer[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  categories CategoriesQuestionsRelation[]
 }
 
 model Answer {
@@ -83,3 +87,20 @@ model Answer {
   question  Question @relation(fields: [questionId], references: [id])
   questionId String
 }
+
+model Category {
+  id        String   @id @default(cuid())
+  name      String
+  questions CategoriesQuestionsRelation[]
+}
+
+model CategoriesQuestionsRelation {
+  question Question @relation(fields: [questionId], references: [id])
+  questionId String
+  category Category @relation(fields: [categoryId], references: [id])
+  categoryId String
+  assignedAt DateTime
+  assignedBy User @relation(fields: [assignedById], references: [id])
+  assignedById String
+  @@id([questionId, categoryId])
+} 
